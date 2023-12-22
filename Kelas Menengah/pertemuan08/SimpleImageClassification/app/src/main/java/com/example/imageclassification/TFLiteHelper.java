@@ -100,13 +100,52 @@ public class TFLiteHelper {
     
     
     // ---- Kolom klasifikasi ----
+    void classifyImage(Bitmap bitmap){
+        int imageTensorIndex = 0;
+        int[] imageShape = tflite.getInputTensor(imageTensorIndex).shape(); // {1, height, width, 3}
+        imageSizeY = imageShape[1];
+        imageSizeX = imageShape[2];
+        DataType imageDataType = tflite.getInputTensor(imageTensorIndex).dataType();
 
+        int probabilityTensorIndex = 0;
+        int probabilityShape = tflite.getOutputTensor(probabilityTensorIndex).shape(); // {1, NUM_CLASSES}
+        DataType probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
+
+        inputImageBuffer = new TensorImage(imageDataType);
+        outputProbabilityBuffer = TensorBuffer.createFixedSize(probabilityShape, probabilityDataType);
+        probabilityProcessor = new TensorProcessor.Builder().add(getPostProcessNormalizeOp()).build();
+
+        inputImageBuffer = loadImage(bitmap);
+
+        tflite.run(InputImageBuffer.getBuffer(), outputProbabilityBuffer.getBuffer().rewind())
+    }
 
     // ----------------------------------------------------
 
 
     // ---- Kolom postprocessing ----
+    public String showResult() {
+        try{
+            labels = FileUtil.loadLabels(context, "vegs.txt");
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+        Map<String, Float> labeledProbability = new TensorLabel(labels, probabilityProcessor.process(outputProbabilityBuffer)).getMapWithFloatValue();
+        float maxValueInMap = (Collections.max(labeledProbability.values()));
+        String result = null;
+        for (Map.Entry<String, Float> entry: labeledProbability.entrySet()){
+            if (entry.getValue() == maxValueInMap) {
+                result = entry.getKey()
+            }
+        }
 
+        return result;
+    }
+
+    private TensorOperator getPostProcessNormalizeOp() {
+        return new NormalizeOp(PROBABILITY_MEAN, PROBABILITY_STD);
+    }
 
     // ----------------------------------------------------
 
