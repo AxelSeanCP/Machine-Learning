@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     TFLiteHelper tfLiteHelper;
     private Bitmap bitmap;
 
-    @Override 
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View view) {
             String SELECT_TYPE = "image/*";
             String SELECT_PICTURE = "Select Picture";
- 
+
             Intent intent = new Intent();
             intent.setType(SELECT_TYPE);
             intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -69,12 +69,13 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    View.OnClickListener classifyImageListtener = new View.OnClickListener() {
+
+    View.OnClickListener classifyImageListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (bitmap != null) {
                 tfLiteHelper.classifyImage(bitmap);
-                setLabel(tfLiteHelper.showresult());
+                setLabel(tfLiteHelper.showResult());
             }
         }
     };

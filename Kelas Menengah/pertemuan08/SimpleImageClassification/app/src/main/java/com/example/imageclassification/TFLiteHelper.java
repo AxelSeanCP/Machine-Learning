@@ -63,28 +63,24 @@ public class TFLiteHelper {
 
 
     // ---- Kolom preprocessing gambar ----
-    private TensorImage loadImage(Final Bitmap bitmap){
+    private TensorImage loadImage(final Bitmap bitmap){
         // loads bitmap into tensor image
-        InputImageBuffer.load(bitmap);
+        inputImageBuffer.load(bitmap);
 
         // creates processor for the tensor image
         int cropSize = Math.min(bitmap.getWidth(), bitmap.getHeight());
         // TODO: Fuse ops inside ImageProcessor
         ImageProcessor imageProcessor =
                 new ImageProcessor.Builder()
-                        .add(new ResizeWithCropOrPadOP(cropSize, cropSize))
-                        .add(new ResizeOp(imageSizeX, imageSizeY, ResizeOP.ResizeMethod.NEAREST_NEIGHBOR))
-                        .add(getPreprocessNormalizeOP())
+                        .add(new ResizeWithCropOrPadOp(cropSize, cropSize))
+                        .add(new ResizeOp(imageSizeX, imageSizeY, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR))
+                        .add(getPreprocessNormalizeOp())
                         .build();
         return imageProcessor.process(inputImageBuffer);
     }
-
-    private TensorOperator getProcessNormalizeOp() {
-        return new NormalizeOp(IMAGE_MEAN, IMAGE_STD);
-    }
     // ----------------------------------------------------
 
-    
+
     // ---- Kolom pemanggilan model tflite ----
     private MappedByteBuffer loadmodelfile(Activity activity) throws IOException {
         String MODEL_NAME = "vegs.tflite";
@@ -97,8 +93,8 @@ public class TFLiteHelper {
     }
 
     // ----------------------------------------------------
-    
-    
+
+
     // ---- Kolom klasifikasi ----
     void classifyImage(Bitmap bitmap){
         int imageTensorIndex = 0;
@@ -108,7 +104,8 @@ public class TFLiteHelper {
         DataType imageDataType = tflite.getInputTensor(imageTensorIndex).dataType();
 
         int probabilityTensorIndex = 0;
-        int probabilityShape = tflite.getOutputTensor(probabilityTensorIndex).shape(); // {1, NUM_CLASSES}
+        int[] probabilityShape =
+                tflite.getOutputTensor(probabilityTensorIndex).shape(); // {1, NUM_CLASSES}
         DataType probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
 
         inputImageBuffer = new TensorImage(imageDataType);
@@ -117,7 +114,12 @@ public class TFLiteHelper {
 
         inputImageBuffer = loadImage(bitmap);
 
-        tflite.run(InputImageBuffer.getBuffer(), outputProbabilityBuffer.getBuffer().rewind())
+        tflite.run(inputImageBuffer.getBuffer(),outputProbabilityBuffer.getBuffer().rewind());
+
+    }
+
+    private TensorOperator getPreprocessNormalizeOp() {
+        return new NormalizeOp(IMAGE_MEAN, IMAGE_STD);
     }
 
     // ----------------------------------------------------
@@ -136,7 +138,7 @@ public class TFLiteHelper {
         String result = null;
         for (Map.Entry<String, Float> entry: labeledProbability.entrySet()){
             if (entry.getValue() == maxValueInMap) {
-                result = entry.getKey()
+                result = entry.getKey();
             }
         }
 
