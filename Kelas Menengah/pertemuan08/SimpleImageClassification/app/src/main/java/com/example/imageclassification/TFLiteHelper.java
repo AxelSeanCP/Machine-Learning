@@ -51,40 +51,35 @@ public class TFLiteHelper {
     }
 
     // ---- Kolom inisiasi TensorFlow Lite Interpreter ----
+
     void init() {
-        try{
+        try {
             Interpreter.Options opt = new Interpreter.Options();
-        }catch (Exception e){
+            tflite = new Interpreter(loadmodelfile(context), opt);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
     // ----------------------------------------------------
 
-
     // ---- Kolom preprocessing gambar ----
-    private TensorImage loadImage(Final Bitmap bitmap){
-        // loads bitmap into tensor image
-        InputImageBuffer.load(bitmap);
+    private TensorImage loadImage(final Bitmap bitmap) {
+        // Loads bitmap into a TensorImage.
+        inputImageBuffer.load(bitmap);
 
-        // creates processor for the tensor image
+        // Creates processor for the TensorImage.
         int cropSize = Math.min(bitmap.getWidth(), bitmap.getHeight());
-        // TODO: Fuse ops inside ImageProcessor
+        // TODO(b/143564309): Fuse ops inside ImageProcessor.
         ImageProcessor imageProcessor =
                 new ImageProcessor.Builder()
-                        .add(new ResizeWithCropOrPadOP(cropSize, cropSize))
-                        .add(new ResizeOp(imageSizeX, imageSizeY, ResizeOP.ResizeMethod.NEAREST_NEIGHBOR))
-                        .add(getPreprocessNormalizeOP())
+                        .add(new ResizeWithCropOrPadOp(cropSize, cropSize))
+                        .add(new ResizeOp(imageSizeX, imageSizeY, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR))
+                        .add(getPreprocessNormalizeOp())
                         .build();
         return imageProcessor.process(inputImageBuffer);
     }
-
-    private TensorOperator getProcessNormalizeOp() {
-        return new NormalizeOp(IMAGE_MEAN, IMAGE_STD);
-    }
     // ----------------------------------------------------
 
-    
     // ---- Kolom pemanggilan model tflite ----
     private MappedByteBuffer loadmodelfile(Activity activity) throws IOException {
         String MODEL_NAME = "vegs.tflite";
@@ -96,10 +91,6 @@ public class TFLiteHelper {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startoffset, declaredLength);
     }
 
-    // ----------------------------------------------------
-    
-    
-    // ---- Kolom klasifikasi ----
     void classifyImage(Bitmap bitmap){
         int imageTensorIndex = 0;
         int[] imageShape = tflite.getInputTensor(imageTensorIndex).shape(); // {1, height, width, 3}
@@ -108,45 +99,50 @@ public class TFLiteHelper {
         DataType imageDataType = tflite.getInputTensor(imageTensorIndex).dataType();
 
         int probabilityTensorIndex = 0;
-        int probabilityShape = tflite.getOutputTensor(probabilityTensorIndex).shape(); // {1, NUM_CLASSES}
+        int[] probabilityShape =
+                tflite.getOutputTensor(probabilityTensorIndex).shape(); // {1, NUM_CLASSES}
         DataType probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
 
         inputImageBuffer = new TensorImage(imageDataType);
         outputProbabilityBuffer = TensorBuffer.createFixedSize(probabilityShape, probabilityDataType);
-        probabilityProcessor = new TensorProcessor.Builder().add(getPostProcessNormalizeOp()).build();
+        probabilityProcessor = new TensorProcessor.Builder().add(getPostprocessNormalizeOp()).build();
 
         inputImageBuffer = loadImage(bitmap);
 
-        tflite.run(InputImageBuffer.getBuffer(), outputProbabilityBuffer.getBuffer().rewind())
+        tflite.run(inputImageBuffer.getBuffer(),outputProbabilityBuffer.getBuffer().rewind());
+
     }
 
+    private TensorOperator getPreprocessNormalizeOp() {
+        return new NormalizeOp(IMAGE_MEAN, IMAGE_STD);
+    }
     // ----------------------------------------------------
-
 
     // ---- Kolom postprocessing ----
     public String showResult() {
-        try{
+        try {
             labels = FileUtil.loadLabels(context, "vegs.txt");
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-        Map<String, Float> labeledProbability = new TensorLabel(labels, probabilityProcessor.process(outputProbabilityBuffer)).getMapWithFloatValue();
+        Map<String, Float> labeledProbability =
+                new TensorLabel(labels, probabilityProcessor.process(outputProbabilityBuffer))
+                        .getMapWithFloatValue();
         float maxValueInMap = (Collections.max(labeledProbability.values()));
         String result = null;
-        for (Map.Entry<String, Float> entry: labeledProbability.entrySet()){
+        for (Map.Entry<String, Float> entry : labeledProbability.entrySet()) {
             if (entry.getValue() == maxValueInMap) {
-                result = entry.getKey()
+                result = entry.getKey();
             }
         }
 
         return result;
     }
 
-    private TensorOperator getPostProcessNormalizeOp() {
+    private TensorOperator getPostprocessNormalizeOp() {
         return new NormalizeOp(PROBABILITY_MEAN, PROBABILITY_STD);
     }
-
     // ----------------------------------------------------
 
 }
