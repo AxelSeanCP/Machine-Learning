@@ -51,25 +51,25 @@ public class TFLiteHelper {
     }
 
     // ---- Kolom inisiasi TensorFlow Lite Interpreter ----
+
     void init() {
-        try{
+        try {
             Interpreter.Options opt = new Interpreter.Options();
-        }catch (Exception e){
+            tflite = new Interpreter(loadmodelfile(context), opt);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
     // ----------------------------------------------------
 
-
     // ---- Kolom preprocessing gambar ----
-    private TensorImage loadImage(final Bitmap bitmap){
-        // loads bitmap into tensor image
+    private TensorImage loadImage(final Bitmap bitmap) {
+        // Loads bitmap into a TensorImage.
         inputImageBuffer.load(bitmap);
 
-        // creates processor for the tensor image
+        // Creates processor for the TensorImage.
         int cropSize = Math.min(bitmap.getWidth(), bitmap.getHeight());
-        // TODO: Fuse ops inside ImageProcessor
+        // TODO(b/143564309): Fuse ops inside ImageProcessor.
         ImageProcessor imageProcessor =
                 new ImageProcessor.Builder()
                         .add(new ResizeWithCropOrPadOp(cropSize, cropSize))
@@ -79,7 +79,6 @@ public class TFLiteHelper {
         return imageProcessor.process(inputImageBuffer);
     }
     // ----------------------------------------------------
-
 
     // ---- Kolom pemanggilan model tflite ----
     private MappedByteBuffer loadmodelfile(Activity activity) throws IOException {
@@ -92,10 +91,6 @@ public class TFLiteHelper {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startoffset, declaredLength);
     }
 
-    // ----------------------------------------------------
-
-
-    // ---- Kolom klasifikasi ----
     void classifyImage(Bitmap bitmap){
         int imageTensorIndex = 0;
         int[] imageShape = tflite.getInputTensor(imageTensorIndex).shape(); // {1, height, width, 3}
@@ -110,7 +105,7 @@ public class TFLiteHelper {
 
         inputImageBuffer = new TensorImage(imageDataType);
         outputProbabilityBuffer = TensorBuffer.createFixedSize(probabilityShape, probabilityDataType);
-        probabilityProcessor = new TensorProcessor.Builder().add(getPostProcessNormalizeOp()).build();
+        probabilityProcessor = new TensorProcessor.Builder().add(getPostprocessNormalizeOp()).build();
 
         inputImageBuffer = loadImage(bitmap);
 
@@ -121,22 +116,22 @@ public class TFLiteHelper {
     private TensorOperator getPreprocessNormalizeOp() {
         return new NormalizeOp(IMAGE_MEAN, IMAGE_STD);
     }
-
     // ----------------------------------------------------
-
 
     // ---- Kolom postprocessing ----
     public String showResult() {
-        try{
+        try {
             labels = FileUtil.loadLabels(context, "vegs.txt");
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-        Map<String, Float> labeledProbability = new TensorLabel(labels, probabilityProcessor.process(outputProbabilityBuffer)).getMapWithFloatValue();
+        Map<String, Float> labeledProbability =
+                new TensorLabel(labels, probabilityProcessor.process(outputProbabilityBuffer))
+                        .getMapWithFloatValue();
         float maxValueInMap = (Collections.max(labeledProbability.values()));
         String result = null;
-        for (Map.Entry<String, Float> entry: labeledProbability.entrySet()){
+        for (Map.Entry<String, Float> entry : labeledProbability.entrySet()) {
             if (entry.getValue() == maxValueInMap) {
                 result = entry.getKey();
             }
@@ -145,10 +140,9 @@ public class TFLiteHelper {
         return result;
     }
 
-    private TensorOperator getPostProcessNormalizeOp() {
+    private TensorOperator getPostprocessNormalizeOp() {
         return new NormalizeOp(PROBABILITY_MEAN, PROBABILITY_STD);
     }
-
     // ----------------------------------------------------
 
 }
