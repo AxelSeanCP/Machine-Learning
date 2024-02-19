@@ -1,0 +1,30 @@
+Concrete Compressive Strength
+
+background:
+- concrete is used in almost all construction programs because its known for its strength and durability.
+because concrete is a critical factor in determining the performance of a structure.
+however there is a risk for non-safe structure because the concrete is not strong enough.
+to determine the strength and durability, civil engineers use the concrete compresive strength unit.
+it is a parameters that civil engineers use to design safe concrete structures.
+
+why project domain need to be solved
+- to ensure a safe and efficient structure with minimal risk of failure, that will also benefited the potential people who will use the structure
+
+how project domain will be solved
+- using machine learning algorithms to predict the compressive strength of a concrete and determine which concrete is strong enough to build a safe structure
+
+
+business understanding
+in the construction industry it is important to determine the strength of the concrete to ensure structural integrity and safety of the buildings.
+civil engineers and contractors need methods to predict concrete strength as early as possible to reduce cost, avoid over design, etc.
+with machine learning it is possible to predict the concrete strength based on various factors such as the components, the age, etc
+
+problem statement
+- what are the key features that determine the compressive strength of a concrete
+- how to predict the concrete compressive strength before begining to test it
+
+goals
+- identify the key features that correlate with compressive strength of concrete
+- develop a machine learning model to predict the compressive strength of concrete
+
+side notes:
