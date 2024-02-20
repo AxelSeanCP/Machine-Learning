@@ -5,7 +5,7 @@ background:
 because concrete is a critical factor in determining the performance of a structure.
 however there is a risk for non-safe structure because the concrete is not strong enough.
 to determine the strength and durability, civil engineers use the concrete compresive strength unit.
-it is a parameters that civil engineers use to design safe concrete structures.
+it is a parameters that civil engineers use to design safe and efficient structures.
 
 why project domain need to be solved
 - to ensure a safe and efficient structure with minimal risk of failure, that will also benefited the potential people who will use the structure
@@ -27,4 +27,18 @@ goals
 - identify the key features that correlate with compressive strength of concrete
 - develop a machine learning model to predict the compressive strength of concrete
 
+solution statement:
+- using multiple machine learning algorithms such as K-Nearest Neighbor, Support Vector Regression, Random Forest, Boosting
+
 side notes:
+
+references: 
+- https://www.analyticsvidhya.com/blog/2021/05/5-regression-algorithms-you-should-know-introductory-guide/
+- https://medium.com/@mohamadhasan.sarvandani/top-algorithms-of-non-linear-regression-in-machine-learning-proposed-python-library-and-python-c871752ddd81
+- https://www.aindhae.com/2019/10/cara-menghitung-root-mean-squared-error.html
+
+things that could go south:
+- missing values (assumption is the 0 means the component wasn't used)
+- water has low correlation with concrete strength
+- not implementing dimension reduction
+- not deciding on what metrics should you use (RMSE, MSE, MAE)

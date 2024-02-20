@@ -20,6 +20,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 # %matplotlib inline
 import numpy as np
+import seaborn as sns
 
 """## Data Loading
 - dataset link: [click here!](https://archive.ics.uci.edu/dataset/165/concrete+compressive+strength)
@@ -38,11 +39,6 @@ concrete_compressive_strength = fetch_ucirepo(id=165)
 
 concrete_data = concrete_compressive_strength.data.original
 concrete_data
-
-"""### Split the features and label"""
-
-X = concrete_compressive_strength.data.features
-y = concrete_compressive_strength.data.targets
 
 """# Data Understanding
 
@@ -71,15 +67,138 @@ Variable Description
 concrete_data.info()
 
 """### Check for missing values
-> note: the 0's means that component wasn't used for the mixture
+> assumption: the 0's means that component wasn't used for the mixture
 """
 
 concrete_data.describe()
 
-blast = (concrete_data['Blast Furnace Slag'] == 0).sum()
-fly = (concrete_data['Fly Ash'] == 0).sum()
-sup = (concrete_data['Superplasticizer'] == 0).sum()
+"""# EDA - Check for Outliers
 
-print("Nilai 0 di kolom Blast Furnace Slag ada: ",blast)
-print("Nilai 0 di kolom Fly Ash ada: ",fly)
-print("Nilai 0 di kolom Superplasticizer ada: ",sup)
+## Check for outliers from each feature
+"""
+
+sns.boxplot(x=concrete_data['Cement'])
+
+sns.boxplot(x=concrete_data['Blast Furnace Slag'])
+
+sns.boxplot(x=concrete_data['Fly Ash'])
+
+sns.boxplot(x=concrete_data['Water'])
+
+sns.boxplot(x=concrete_data['Superplasticizer'])
+
+sns.boxplot(x=concrete_data['Coarse Aggregate'])
+
+sns.boxplot(x=concrete_data['Fine Aggregate'])
+
+sns.boxplot(x=concrete_data['Age'])
+
+"""## Handle Outliers
+- there are a few outliers that need to be cleaned
+- using IQR method to clean outliers
+"""
+
+Q1 = concrete_data.quantile(0.25, numeric_only=True)
+Q3 = concrete_data.quantile(0.75, numeric_only=True)
+
+IQR = Q3 - Q1
+left_Q1, right_Q1 = concrete_data.align((Q1 - 1.5 * IQR), axis=1, copy=False)
+left_Q3, right_Q3 = concrete_data.align((Q3 + 1.5 * IQR), axis=1, copy=False)
+concrete_data = concrete_data[~((left_Q1 < right_Q1) | (left_Q3 > right_Q3)).any(axis=1)]
+
+concrete_data.shape
+
+"""# EDA - Univariate Analysis"""
+
+concrete_data.hist(bins=50, figsize=(20,15))
+plt.show()
+
+"""# EDA - Multivariate Analysis
+- analize the correlation between the concrete compressive strength with other features
+"""
+
+sns.pairplot(concrete_data, diag_kind='kde')
+
+"""## Evaluate Correlation Score"""
+
+plt.figure(figsize=(10,8))
+correlation_matrix = concrete_data.corr().round(2)
+
+sns.heatmap(data=correlation_matrix, annot=True, cmap='coolwarm', linewidth=0.5)
+plt.title("Correlation Matrix for Numerical Features")
+
+"""# Data Preparation
+- split features and target
+- split into train and test
+- standardization
+
+## Split Features and Target
+"""
+
+X = concrete_data.drop(['Concrete compressive strength'], axis=1)
+y = concrete_data['Concrete compressive strength']
+
+"""## Split into train and test"""
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=69)
+
+print(f"Total # of samples in dataset: {len(X)}")
+print(f"Total # of samples in train dataset: {len(X_train)}")
+print(f"Total # of samples in test dataset: {len(X_test)}")
+
+"""## Standardization
+
+- when using StandardScaler the dataframe will change into numpy.ndarray
+- to prevent this simply store the index and columns
+- and then create a dataframe using those index and columns combined with the scaled data
+"""
+
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+scaler.fit(X_train)
+
+index, columns = X_train.index, X_train.columns
+
+X_train = scaler.fit_transform(X_train)
+X_train = pd.DataFrame(X_train, index=index, columns=columns)
+X_train.head()
+
+X_train.describe().round(4)
+
+"""# Modelling
+
+Algorithm used :
+- K-Nearest Neighbor
+- Support Vector Regression
+- Random Forest
+- Boosting
+"""
+
+# Dataframe to analyze model
+model_list = pd.DataFrame(index=['train_mse', 'test_mse'],
+                          columns=['KNN', 'SVR', 'RandomForest', 'XGBoost'])
+
+from sklearn.metrics import mean_squared_error
+
+"""## K-Nearest Neighbors"""
+
+from sklearn.neighbors import KNeighborsRegressor
+
+knn = KNeighborsRegressor(n_neighbors=6)
+knn.fit(X_train, y_train)
+
+model_list.loc['train_mse', 'KNN'] = mean_squared_error(y_pred=knn.predict(X_train), y_true=y_train)
+model_list.loc['train_mse', 'KNN']
+
+"""## Support Vector Regression"""
+
+from sklearn.svm import SVR
+
+svr = SVR(kernel='rbf')
+svr.fit(X_train, y_train)
+
+model_list.loc['train_mse', 'SVR'] = mean_squared_error(y_pred=svr.predict(X_train), y_true=y_train)
+model_list.loc['train_mse', 'SVR']
