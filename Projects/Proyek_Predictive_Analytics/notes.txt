@@ -31,6 +31,24 @@ solution statement:
 - using multiple machine learning algorithms such as K-Nearest Neighbor, Support Vector Regression, Random Forest, Boosting
 
 side notes:
+- use metrics RMSE, why?:
+The RMSE has some benefits over both MAE and MSE:
+
+    It has the same unit as the target variable, like MAE, but not too different, like MSE.
+    It penalises large errors more than small errors like MSE, but not too much like MSE.
+
+However, the RMSE also has some drawbacks:
+
+    It is still sensitive to outliers like MSE.
+    It is not easily interpretable like MAE.
+If you want a compromise between MAE and MSE, you can use Root Mean Squared Error (RMSE) which is more sensitive to outliers than MAE but less sensitive than MSE.
+If you care more about large errors than small ones or want to penalise models that make large mistakes, you might prefer MSE or RMSE over MAE.
+If you want a metric with the same unit as your actual and predicted values, you might prefer RMSE over MSE or MAE.
+
+- reason to not implement dimensionality reduction:
+* dimensional reduction reduces the number of features but doesn't change the nature of the dataset. 
+since i have a small dataset, using dimensionality reduction might reduces the sample of my dataset and affect model development.
+hence i refrain from using dimensional reduction methods.
 
 references: 
 - https://www.analyticsvidhya.com/blog/2021/05/5-regression-algorithms-you-should-know-introductory-guide/
@@ -41,4 +59,3 @@ things that could go south:
 - missing values (assumption is the 0 means the component wasn't used)
 - water has low correlation with concrete strength
 - not implementing dimension reduction
-- not deciding on what metrics should you use (RMSE, MSE, MAE)
