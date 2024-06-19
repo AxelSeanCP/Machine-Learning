@@ -158,13 +158,10 @@ pyfarmhash==0.3.2
 Pygments==2.17.2
 pymongo==4.6.1
 pyparsing==3.1.1
-pypiwin32==223
 pyrsistent==0.20.0
 python-dateutil==2.8.2
 python-json-logger==2.0.7
 pytz==2023.3.post1
-pywin32==306
-pywinpty==2.0.12
 PyYAML==6.0.1
 pyzmq==25.1.2
 qtconsole==5.5.1
@@ -189,9 +186,7 @@ tensorboard-data-server==0.7.2
 tensorflow==2.13.1
 tensorflow-data-validation==1.14.0
 tensorflow-estimator==2.13.0
-tensorflow-hub==0.13.0
 tensorflow-hub
-tensorflow-intel==2.13.1
 tensorflow-intel
 tensorflow-io-gcs-filesystem==0.31.0
 tensorflow-metadata==1.14.0
