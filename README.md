@@ -9,6 +9,7 @@ This is my repository to keep my learning progress when learning about Machine L
 - [Belajar Pengembangan Machine Learning](https://www.dicoding.com/certificates/KEXL8YNRWZG2)
 ### Expert Class
 - [Machine Learning Terapan](https://www.dicoding.com/certificates/07Z6W1R1RZQR)
+- [Machine Learning Operations (MLOps)](https://www.dicoding.com/certificates/GRX5OYNE3P0M)
 
 # How to open
 - simply open the .ipynb file in google colab
